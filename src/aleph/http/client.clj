@@ -452,7 +452,12 @@
                nil
 
                (instance? CloseWebSocketFrame msg)
-               (netty/close ctx)))
+               (let [frame ^CloseWebSocketFrame msg]
+                 (when (realized? d)
+                   (doto @d (alter-meta! assoc
+                                         :aleph/websocket-close-code (.statusCode frame)
+                                         :aleph/websocket-close-msg (.reasonText frame))))
+                 (netty/close ctx))))
            (finally
              (netty/release msg)))))]))
 
